@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:3001/graphql
+      - NEXT_PUBLIC_AI_SERVICE_URL=http://ai_service:8000
+    depends_on:
+      - backend
+      - ai_service
+
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/fundora
+      - JWT_SECRET=your-production-secret-key
+    depends_on:
+      - db
+
+  ai_service:
+    build: ./ai_service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ai_service/models:/app/models
+
+  db:
+    image: postgres:14
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=fundora
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
